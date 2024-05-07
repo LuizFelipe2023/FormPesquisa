@@ -1,36 +1,15 @@
 <?php
+require_once('../config/connect.php');
+
 session_start();
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login_admin.php");
     exit;
 }
 
-require_once("../config/connect.php");
-
-$stmt = $conn->prepare("SELECT nivel_satisfacao, COUNT(*) as total FROM teste GROUP BY nivel_satisfacao");
+$stmt = $conn->prepare("SELECT * FROM teste");
 $stmt->execute();
 $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$satisfeito = 0;
-$neutro = 0;
-$insatisfeito = 0;
-$totalRespostas = 0;
-
-foreach ($resultados as $resultado) {
-    $totalRespostas += $resultado['total'];
-    switch ($resultado['nivel_satisfacao']) {
-        case 1:
-            $satisfeito = $resultado['total'];
-            break;
-        case 2:
-            $neutro = $resultado['total'];
-            break;
-        case 3:
-            $insatisfeito = $resultado['total'];
-            break;
-    }
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -39,8 +18,8 @@ foreach ($resultados as $resultado) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Lista de Pessoas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <title>Painel Administrativo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -145,45 +124,37 @@ foreach ($resultados as $resultado) {
 </head>
 
 <body>
-
-<div class="sidebar">
-        <a href="#"><i class="fas fa-home"></i> Painel Administrativo</a>
-        <a href="listar_pessoas.php"><i class="fas fa-users"></i> Lista de Pessoas</a>
+    <div class="sidebar">
+        <a href="admin.php"><i class="fas fa-home"></i> Painel Administrativo</a>
+        <a href="lista_pessoas.php"><i class="fas fa-users"></i> Lista de Pessoas</a>
         <a href="logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
     <div class="content">
         <div class="header">
-            <h1>Painel Administrativo</h1>
+            <h1>Painel Administrativo - Lista de Pessoas</h1>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th>Categoria</th>
-                    <th>Total</th>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Nível de Satisfação</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Satisfeito</td>
-                    <td><?php echo $satisfeito; ?></td>
-                </tr>
-                <tr>
-                    <td>Neutro</td>
-                    <td><?php echo $neutro; ?></td>
-                </tr>
-                <tr>
-                    <td>Insatisfeito</td>
-                    <td><?php echo $insatisfeito; ?></td>
-                </tr>
-                <tr>
-                    <td>Total de Respostas</td>
-                    <td><?php echo $totalRespostas; ?></td>
-                </tr>
+                <?php foreach ($resultados as $pessoa) : ?>
+                    <tr>
+                        <td><?php echo $pessoa['id']; ?></td>
+                        <td><?php echo $pessoa['nome']; ?></td>
+                        <td><?php echo $pessoa['cpf']; ?></td>
+                        <td><?php echo $pessoa['nivel_satisfacao']; ?></td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-
 </body>
 
 </html>
